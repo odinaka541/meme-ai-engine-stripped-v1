@@ -1,0 +1,11 @@
+faiss-gpu
+fastapi
+numpy
+opencv-python
+pillow
+pytesseract
+sentence-transformers
+torch
+transformers
+uvicorn
+wordninja
