@@ -14,7 +14,8 @@ import os
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # configs -----
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = "tesseract"
 # force pytesseract to decode stdout as utf-8 instead of 'charmap'
 import pytesseract
 import subprocess
