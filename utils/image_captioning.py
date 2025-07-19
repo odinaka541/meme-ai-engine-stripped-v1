@@ -6,8 +6,8 @@ from PIL import Image
 import torch
 
 # configs
-PROCESSOR = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
-MODEL = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
+PROCESSOR = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+MODEL = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
 #
 def generate_caption(image_path:str) -> str:
