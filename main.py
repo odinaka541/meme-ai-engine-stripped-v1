@@ -13,9 +13,9 @@ todo: 1. everything needs a uuid
 from fastapi import File, UploadFile, FastAPI, Query, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from sentence_transformers import CrossEncoder
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
+# from sentence_transformers import CrossEncoder
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# import torch
 
 import os
 os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -33,17 +33,22 @@ from utils.image_captioning import generate_caption
 # configs -----
 app = FastAPI()
 
-RERANKER_TOKENIZER = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base", use_fast=True)
-RERANKER_MODEL = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
+# RERANKER_TOKENIZER = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base", use_fast=True)
+# RERANKER_MODEL = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
 
 # defining a path for the frontend to display images
 app.mount("/memes", StaticFiles(directory="uploaded_memes"), name = "memes")
 
 # loading the crossencoder reranker
-reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+# reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 
 # setting up the routes for upload and search -----
+
+@app.get("/")
+def read_root():
+    return {"status": "API is running"}
+    
 
 @app.post("/upload")
 async def upload_files(file: UploadFile = File(...)):
@@ -87,7 +92,7 @@ async def upload_files(file: UploadFile = File(...)):
             "filename": filename,
             "extracted_text": extracted_text,
             "caption": image_caption,
-            "url": f"http://127.0.0.1:8001/memes/{filename}" # for the frontend
+            # "url": f"http://127.0.0.1:8001/memes/{filename}" # for the frontend
         }
 
         add_to_index(combined_embedding, meta)
@@ -150,14 +155,14 @@ async def search_memes(q: str = Query(...), k: int = 3):
         if not combined_text:
             continue
 
-        rerank_inputs.append((q, combined_text))
+        # rerank_inputs.append((q, combined_text))
         valid_indices.append(i)
 
     results = []
     for i, dist in zip(indices[0], distances[0]):
         if i < len(metadata):
             item = metadata[i].copy()
-            item["url"] = f"http://localhost:8001/memes/{item['filename']}"
+            # item["url"] = f"http://localhost:8001/memes/{item['filename']}"
             similarity_score = 100 * (1 - ((dist - min_dist) / range_dist))
             if similarity_score >= 40:
                 item["score"] = float(round(similarity_score, 2))
@@ -165,27 +170,27 @@ async def search_memes(q: str = Query(...), k: int = 3):
 
 
     # preparing the inputs
-    rerank_inputs = [
-        {"text": q, "text_pair": f"{item['caption']} | {item['extracted_text']}"}
-        for item in results
-    ]
-    texts = [f"{x['text']} [SEP] {x['text_pair']}" for x in rerank_inputs]
-    tokenized = RERANKER_TOKENIZER(texts, padding=True, truncation=True, return_tensors="pt")
+    # rerank_inputs = [
+    #     {"text": q, "text_pair": f"{item['caption']} | {item['extracted_text']}"}
+    #     for item in results
+    # ]
+    # texts = [f"{x['text']} [SEP] {x['text_pair']}" for x in rerank_inputs]
+    # tokenized = RERANKER_TOKENIZER(texts, padding=True, truncation=True, return_tensors="pt")
 
-    # reranking
-    with torch.no_grad():
-        scores = RERANKER_MODEL(**tokenized).logits.squeeze(-1).tolist()
+    # # reranking
+    # with torch.no_grad():
+    #     scores = RERANKER_MODEL(**tokenized).logits.squeeze(-1).tolist()
 
     # thresholding
-    threshold = 0.4
-    reranked = []
-    for item, score in zip(results, scores):
-        if score >= threshold:
-            item["rerank_score"] = round(score, 4)
-            reranked.append(item)
+    # threshold = 0.4
+    # reranked = []
+    # for item, score in zip(results, scores):
+    #     if score >= threshold:
+    #         item["rerank_score"] = round(score, 4)
+    #         reranked.append(item)
 
     # sorting
-    reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
+    # reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
 
     # print ({
     #     "query": q,
@@ -234,7 +239,7 @@ async def search_by_image(file: UploadFile = File(...), k: int = 3):
         for i, dist in zip(indices[0], distances[0]):
             if i < len(metadata):
                 item = metadata[i].copy()
-                item["url"] = f"http://localhost:8001/memes/{item['filename']}"
+                # item["url"] = f"http://localhost:8001/memes/{item['filename']}"
                 similarity_score = 100 * (1 - ((dist - min_dist) / range_dist))
                 if similarity_score >= 40:
                     item["score"] = float(round(similarity_score, 2))
