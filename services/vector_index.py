@@ -18,7 +18,7 @@ VECTOR_DIM = 1280 # 768 + 512
 INDEX_PATH = "vector_index/index.faiss"
 META_PATH = "vector_index/metadata.json"
 os.makedirs("vector_index", exist_ok=True)
-# model = SentenceTransformer("BAAI/bge-base-en-v1.5")
+model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
 
 # loading the index
